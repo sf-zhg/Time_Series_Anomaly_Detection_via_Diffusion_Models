@@ -1,0 +1,52 @@
+name: Python Package CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install flake8 mypy pydocstyle
+
+    - name: Run Flake8
+      run: |
+        flake8 --max-line-length=88 --extend-ignore=E203,E501 TimeSeriesDiffusion
+
+    - name: Run MyPy
+      if: always()
+      run: |
+        mypy --ignore-missing-imports --scripts-are-modules --follow-imports skip TimeSeriesDiffusion
+
+    - name: Run Pydocstyle
+      if: always()
+      run: |
+        pydocstyle --ignore-decorators=property TimeSeriesDiffusion/run_experiment/run_experiment.py
+
+    - name: Run Arch Shape Test
+      run: python arch_shape_test.py
