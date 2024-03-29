@@ -1,0 +1,12 @@
+#-e .
+pandas
+torch
+scikit-learn
+numpy
+tqdm 
+matplotlib
+numba
+opensimplex
+einops
+tensorboardX
+pytest
